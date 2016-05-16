@@ -1,0 +1,4 @@
+FROM ecomm_php:latest
+
+COPY ./generate.php /var/apps/ecomm/generate.php
+CMD ["/usr/bin/php", "/var/apps/ecomm/generate.php"]
