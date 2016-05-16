@@ -9,7 +9,7 @@ use PhpAmqpLib\Message\AMQPMessage;
 $connection = new AMQPStreamConnection('ecomm_mq', 5672, 'guest', 'guest');
 $channel = $connection->channel();
 
-$channel->exchange_declare('orders', 'fanout', false, false, false);
+$channel->exchange_declare('events', 'fanout', false, false, false);
 
 $exit = false;
 // signal handler function
@@ -21,10 +21,13 @@ $signalHandler = function ($signo) use (&$exit) {
 pcntl_signal(SIGTERM, $signalHandler);
 
 while (!$exit) {
-    $data = ['orderId' => mt_rand(1, 999999)];
+    $data = [
+        'event' => 'OrderCreated',
+        'orderId' => mt_rand(1, 999999)
+    ];
     $msg = new AMQPMessage(json_encode($data));
 
-    $channel->basic_publish($msg, 'orders');
+    $channel->basic_publish($msg, 'events');
     echo "generated order";
     sleep(5);
 }
