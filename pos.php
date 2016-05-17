@@ -24,22 +24,31 @@ $orderCreationCallback = function ($msg) use ($channel, $exchangeName) {
         return;
     }
 
-    echo "Order ${incoming['orderId']} was created\n";
+    $unassigned      = $incoming['lines'];
+    $lineCount       = count($incoming['lines']);
+    echo "Order ${incoming['orderId']} was created with ${lineCount} products\n";
 
-    // one product per PO for demo
-    foreach ($incoming['lines'] as $line) {
-        $data = [
+    do {
+        $assignLinesCount = mt_rand(1, count($unassigned));
+        $linesToAssign   = array_splice($unassigned, 0, $assignLinesCount);
+
+        $po = [
             'event'   => 'PoCreated',
             'orderId' => $incoming['orderId'],
             'poId'    => mt_rand(1, 999999),
-            'lines'   => [
-                $line,
-            ],
+            'lines'   => [],
         ];
-        echo "Creating PO ${data['poId']} for order ${incoming['orderId']}\n";
-        $msg = new AMQPMessage(json_encode($data));
+        foreach ($linesToAssign as $line) {
+            $po['lines'][] = array_pop($linesToAssign);
+        }
+
+        echo "Creating PO ${po['poId']} for order ${incoming['orderId']} with ${assignLinesCount} of ${lineCount} products\n";
+
+        $msg = new AMQPMessage(json_encode($po));
         $channel->basic_publish($msg, $exchangeName, 'po.created');
-    }
+
+        $unassignedCount = count($unassigned);
+    } while ($unassignedCount > 0);
 };
 
 $orderCreateQueue = 'order.created.po.create';
