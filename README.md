@@ -5,7 +5,7 @@
 ### Install docker
 https://docs.docker.com/engine/installation/linux/ubuntulinux/
 
-### Building contains
+### Building containers
 ```shell
 docker build -t ecomm_php -f Dockerfile.php .
 docker build -t ecomm_gen -f Dockerfile.gen .
