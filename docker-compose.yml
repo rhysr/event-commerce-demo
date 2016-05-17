@@ -1,0 +1,26 @@
+version: '2'
+services:
+    mq:
+        image: rabbitmq:3-management
+        ports: 
+            - "8989:15672"
+    generate:
+        build:
+            context: .
+            dockerfile: Dockerfile-app
+        entrypoint: ["/usr/local/bin/dockerize", "-wait", "tcp://mq:5672"]
+        command: ["/usr/bin/php", "/var/apps/ecomm/generate.php"]
+        depends_on:
+            - mq
+        links:
+            - mq
+    orders:
+        build:
+            context: .
+            dockerfile: Dockerfile-app
+        entrypoint: ["/usr/local/bin/dockerize", "-wait", "tcp://mq:5672"]
+        command: ["/usr/bin/php", "/var/apps/ecomm/pos.php"]
+        depends_on:
+            - mq
+        links:
+            - mq

@@ -1,4 +1,0 @@
-FROM ecomm_php:latest
-
-COPY ./pos.php /var/apps/ecomm/pos.php
-CMD ["/usr/bin/php", "/var/apps/ecomm/pos.php"]

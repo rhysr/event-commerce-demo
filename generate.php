@@ -6,7 +6,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
 
-$connection = new AMQPStreamConnection('ecomm_mq', 5672, 'guest', 'guest');
+$connection = new AMQPStreamConnection('mq', 5672, 'guest', 'guest');
 $channel = $connection->channel();
 
 $channel->exchange_declare('orders', 'fanout', false, false, false);
