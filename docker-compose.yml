@@ -24,3 +24,13 @@ services:
             - mq
         links:
             - mq
+    products:
+        build:
+            context: .
+            dockerfile: Dockerfile-app
+        entrypoint: ["/usr/local/bin/dockerize", "-wait", "tcp://mq:5672"]
+        command: ["/usr/bin/php", "/var/apps/ecomm/products.php"]
+        depends_on:
+            - mq
+        links:
+            - mq

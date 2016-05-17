@@ -9,6 +9,6 @@ https://docs.docker.com/engine/installation/linux/ubuntulinux/
 ### Start application
 ```shell
 ./docker-compose up -d 
-./docker-compose logs -f generate pos
+./docker-compose logs -f generate pos products
 ```
 Open `http://localhost:8989`  You may need to wait a few seconds
