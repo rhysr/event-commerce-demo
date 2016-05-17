@@ -14,7 +14,7 @@ services:
             - mq
         links:
             - mq
-    orders:
+    pos:
         build:
             context: .
             dockerfile: Dockerfile-app

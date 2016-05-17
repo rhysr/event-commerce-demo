@@ -7,20 +7,15 @@ use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
 
 $connection = new AMQPStreamConnection('mq', 5672, 'guest', 'guest');
-$channel = $connection->channel();
+$channel    = $connection->channel();
 
-$channel->exchange_declare('orders', 'fanout', false, false, false);
-list($orders_queue_name, ,) = $channel->queue_declare("", false, false, true, false);
-$channel->queue_bind($orders_queue_name, 'orders');
+$exchangeName = 'events';
+$channel->exchange_declare($exchangeName, 'topic', false, false, false);
 
-$channel->exchange_declare('pos', 'fanout', false, false, false);
-list($pos_queue_name, ,) = $channel->queue_declare("", false, false, true, false);
-$channel->queue_bind($pos_queue_name, 'pos');
+// bind one callback to each topic that we care about
 
-$channel->exchange_declare('products', 'fanout', false, false, false);
-
-// Listen to orders
-$orders_callback = function ($msg) use ($channel) {
+// Order creation topic
+$orderCreationCallback = function ($msg) use ($channel, $exchangeName) {
     $incoming = json_decode($msg->body, true);
     if (!isset($incoming['event'])) {
         return;
@@ -29,56 +24,29 @@ $orders_callback = function ($msg) use ($channel) {
         return;
     }
 
-    if ('OrderCreated' === $incoming['event']) {
-        echo "Order ${incoming['orderId']} was created\n";
+    echo "Order ${incoming['orderId']} was created\n";
 
-        // one product per PO for demo
-        foreach ($incoming['lines'] as $line) {
-            $data = [
-                'event'   => 'PoCreated',
-                'orderId' => $incoming['orderId'],
-                'poId'    => mt_rand(1, 999999),
-                'lines'   => [
-                    $line,
-                ],
-            ];
-            echo "Creating PO ${data['poId']} for order ${incoming['orderId']}\n";
-            $msg = new AMQPMessage(json_encode($data));
-            $channel->basic_publish($msg, 'pos');
-        }
+    // one product per PO for demo
+    foreach ($incoming['lines'] as $line) {
+        $data = [
+            'event'   => 'PoCreated',
+            'orderId' => $incoming['orderId'],
+            'poId'    => mt_rand(1, 999999),
+            'lines'   => [
+                $line,
+            ],
+        ];
+        echo "Creating PO ${data['poId']} for order ${incoming['orderId']}\n";
+        $msg = new AMQPMessage(json_encode($data));
+        $channel->basic_publish($msg, $exchangeName, 'po.created');
     }
 };
-$channel->basic_consume($orders_queue_name, '', false, true, false, false, $orders_callback);
 
-$pos_callback = function ($msg) use ($channel) {
-    $incoming = json_decode($msg->body, true);
-    if (!isset($incoming['event'])) {
-        return;
-    }
-    if (!isset($incoming['orderId'])) {
-        return;
-    }
-    if (!isset($incoming['poId'])) {
-        return;
-    }
+$orderCreateQueue = 'order.created.po.create';
+$channel->queue_declare($orderCreateQueue, false, false, true, false);
+$channel->queue_bind($orderCreateQueue, $exchangeName, 'order.created');
+$channel->basic_consume($orderCreateQueue, '', false, true, false, false, $orderCreationCallback);
 
-    if ('PoCreated' === $incoming['event']) {
-        echo "PO ${incoming['poId']} was created\n";
-
-        // update stock
-        foreach ($incoming['lines'] as $line) {
-            $data = [
-                'event'   => 'ProductStockUpdated',
-                'productId' => $line['productId'],
-                'stockLevel' => mt_rand(0, 450),
-            ];
-            echo "Adjust stock levels for ${line['productId']}\n";
-            $msg = new AMQPMessage(json_encode($data));
-            $channel->basic_publish($msg, 'products');
-        }
-    }
-};
-$channel->basic_consume($pos_queue_name, '', false, true, false, false, $pos_callback);
 
 while (count($channel->callbacks)) {
         $channel->wait();

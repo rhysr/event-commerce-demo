@@ -9,7 +9,8 @@ use PhpAmqpLib\Message\AMQPMessage;
 $connection = new AMQPStreamConnection('mq', 5672, 'guest', 'guest');
 $channel = $connection->channel();
 
-$channel->exchange_declare('orders', 'fanout', false, false, false);
+$exchangeName = 'events';
+$channel->exchange_declare($exchangeName, 'topic', false, false, false);
 
 $exit = false;
 // signal handler function
@@ -35,7 +36,7 @@ while (!$exit) {
     }
     $msg = new AMQPMessage(json_encode($data));
 
-    $channel->basic_publish($msg, 'orders');
+    $channel->basic_publish($msg, $exchangeName, 'order.created');
     echo "Generated order ${data['orderId']}\n";
     sleep(5);
 }
