@@ -23,7 +23,7 @@ pcntl_signal(SIGTERM, $signalHandler);
 
 while (!$exit) {
     $data = [
-        'event' => 'OrderCreated',
+        'event' => 'OrderPlaced',
         'orderId' => mt_rand(1, 999999),
         'lines' => [],
     ];
@@ -36,8 +36,8 @@ while (!$exit) {
     }
     $msg = new AMQPMessage(json_encode($data));
 
-    $channel->basic_publish($msg, $exchangeName, 'order.created');
-    echo "Generated order ${data['orderId']}\n";
+    $channel->basic_publish($msg, $exchangeName, 'order.placed');
+    echo "Placing order ${data['orderId']}\n";
     sleep(5);
 }
 

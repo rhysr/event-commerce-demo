@@ -19,6 +19,7 @@ COPY ./composer.json /var/apps/ecomm/composer.json
 COPY ./composer.lock /var/apps/ecomm/composer.lock
 COPY ./vendor /var/apps/ecomm/vendor/
 COPY ./generate.php /var/apps/ecomm/generate.php
+COPY ./orders.php /var/apps/ecomm/orders.php
 COPY ./pos.php /var/apps/ecomm/pos.php
 COPY ./products.php /var/apps/ecomm/products.php
 COPY ./dockerize /usr/local/bin/dockerize
