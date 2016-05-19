@@ -1,0 +1,6 @@
+FROM logstash:2.3
+MAINTAINER Rhys
+
+VOLUME /var/apps/logstash
+COPY ./dockerize /usr/local/bin/dockerize
+

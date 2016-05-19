@@ -4,6 +4,18 @@ services:
         image: rabbitmq:3-management
         ports: 
             - "8989:15672"
+    logstash:
+        build:
+            context: .
+            dockerfile: Dockerfile-logstash
+        volumes:
+        - .:/var/apps/logstash
+        entrypoint: ["/usr/local/bin/dockerize", "-wait", "tcp://mq:5672"]
+        command: ["logstash", "-f", "/var/apps/logstash/logstash.conf"]
+        depends_on:
+            - mq
+        links:
+            - mq
     generate:
         build:
             context: .

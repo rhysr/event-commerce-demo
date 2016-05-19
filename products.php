@@ -16,21 +16,21 @@ $channel->exchange_declare($exchangeName, 'topic', false, false, false);
 
 // PO creation topic
 $poCreationCallback = function ($msg) use ($channel, $exchangeName) {
-    $incoming = json_decode($msg->body, true);
-    if (!isset($incoming['event'])) {
+    $po = json_decode($msg->body, true);
+    if (!isset($po['event'])) {
         return;
     }
-    if (!isset($incoming['orderId'])) {
+    if (!isset($po['orderId'])) {
         return;
     }
-    if (!isset($incoming['poId'])) {
+    if (!isset($po['poId'])) {
         return;
     }
-    if (!isset($incoming['lines'])) {
+    if (!isset($po['lines'])) {
         return;
     }
 
-    foreach ($incoming['lines'] as $line) {
+    foreach ($po['lines'] as $line) {
         $stock = [
             'productId' => $line['productId'],
             'stockLevel' => mt_rand(0, 999),
@@ -38,7 +38,12 @@ $poCreationCallback = function ($msg) use ($channel, $exchangeName) {
         ];
         $initialStockLevel = $stock['stockLevel'] - $stock['adjustment'];
         echo "Adjust stock level for product: ${stock['productId']} from: ${initialStockLevel} to: ${stock['stockLevel']}\n";
-        $msg = new AMQPMessage(json_encode($stock));
+        $msg = new AMQPMessage(
+            json_encode($stock),
+            [
+                'content_type' => 'application/json',
+            ]
+        );
         $channel->basic_publish($msg, $exchangeName, 'product.stock');
     }
 

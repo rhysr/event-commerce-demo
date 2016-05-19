@@ -17,16 +17,16 @@ $channel->exchange_declare($exchangeName, 'topic', false, false, false);
 
 // Order creation topic
 $orderCreationCallback = function ($msg) use ($channel, $exchangeName) {
-    $incoming = json_decode($msg->body, true);
-    if (!isset($incoming['event'])) {
+    $order = json_decode($msg->body, true);
+    if (!isset($order['event'])) {
         return;
     }
-    if (!isset($incoming['orderId'])) {
+    if (!isset($order['orderId'])) {
         return;
     }
 
-    $unassigned      = $incoming['lines'];
-    $lineCount       = count($incoming['lines']);
+    $unassigned      = $order['lines'];
+    $lineCount       = count($order['lines']);
 
     do {
         $assignLinesCount = mt_rand(1, count($unassigned));
@@ -34,7 +34,7 @@ $orderCreationCallback = function ($msg) use ($channel, $exchangeName) {
 
         $po = [
             'event'   => 'PoCreated',
-            'orderId' => $incoming['orderId'],
+            'orderId' => $order['orderId'],
             'poId'    => Uuid::uuid1()->toString(),
             'lines'   => [],
         ];
@@ -42,9 +42,14 @@ $orderCreationCallback = function ($msg) use ($channel, $exchangeName) {
             $po['lines'][] = array_pop($linesToAssign);
         }
 
-        echo "Creating PO ${po['poId']} for order ${incoming['orderId']} with ${assignLinesCount} of ${lineCount} products\n";
+        echo "Creating PO ${po['poId']} for order ${order['orderId']} with ${assignLinesCount} of ${lineCount} products\n";
 
-        $msg = new AMQPMessage(json_encode($po));
+        $msg = new AMQPMessage(
+            json_encode($po),
+            [
+                'content_type' => 'application/json',
+            ]
+        );
         $channel->basic_publish($msg, $exchangeName, 'po.created');
 
         $unassignedCount = count($unassigned);

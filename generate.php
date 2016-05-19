@@ -35,7 +35,12 @@ while (!$exit) {
             'quantity' => mt_rand(1, 20),
         ];
     }
-    $msg = new AMQPMessage(json_encode($data));
+    $msg = new AMQPMessage(
+        json_encode($data),
+        [
+            'content_type' => 'application/json',
+        ]
+    );
 
     $channel->basic_publish($msg, $exchangeName, 'order.placed');
     echo "Placing order ${data['orderId']}\n";

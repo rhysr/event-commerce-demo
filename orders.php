@@ -16,14 +16,19 @@ $channel->exchange_declare($exchangeName, 'topic', false, false, false);
 
 // Order placed topic
 $orderPlacedCallback = function ($msg) use ($channel, $exchangeName) {
-    $incoming = json_decode($msg->body, true);
-    if (!isset($incoming['orderId'])) {
+    $placement = json_decode($msg->body, true);
+    if (!isset($placement['orderId'])) {
         return;
     }
 
-    echo "Order ${incoming['orderId']} received and created\n";
+    echo "Order ${placement['orderId']} received and created\n";
 
-    $msg = new AMQPMessage($msg->body);
+    $msg = new AMQPMessage(
+        json_encode($placement),
+        [
+            'content_type' => 'application/json',
+        ]
+    );
     $channel->basic_publish($msg, $exchangeName, 'order.created');
 };
 
