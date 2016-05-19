@@ -26,7 +26,6 @@ $orderCreationCallback = function ($msg) use ($channel, $exchangeName) {
 
     $unassigned      = $incoming['lines'];
     $lineCount       = count($incoming['lines']);
-    echo "Order ${incoming['orderId']} was created with ${lineCount} products\n";
 
     do {
         $assignLinesCount = mt_rand(1, count($unassigned));
