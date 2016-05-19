@@ -4,13 +4,20 @@ services:
         image: rabbitmq:3-management
         ports: 
             - "8989:15672"
+    elasticsearch:
+        image: elasticsearch:2.3
     logstash:
         build:
             context: .
             dockerfile: Dockerfile-logstash
         volumes:
         - .:/var/apps/logstash
-        entrypoint: ["/usr/local/bin/dockerize", "-wait", "tcp://mq:5672"]
+        entrypoint: 
+            - "/usr/local/bin/dockerize" 
+            - "-wait" 
+            - "tcp://mq:5672"
+            - "-wait" 
+            - "tcp://elasticsearch:9200"
         command: ["logstash", "-f", "/var/apps/logstash/logstash.conf"]
         depends_on:
             - mq
