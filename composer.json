@@ -2,7 +2,8 @@
     "name": "rhys/event-commerce-demo",
     "description": "Testing event driven ecommerce",
     "require": {
-        "php-amqplib/php-amqplib": "2.6.3"
+        "php-amqplib/php-amqplib": "2.6.3",
+        "ramsey/uuid": "^3.4"
     },
     "minimum-stability": "stable"
 }

@@ -5,6 +5,7 @@ declare(ticks = 1);
 require_once __DIR__ . '/vendor/autoload.php';
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
+use Ramsey\Uuid\Uuid;
 
 $connection = new AMQPStreamConnection('mq', 5672, 'guest', 'guest');
 $channel = $connection->channel();
@@ -24,7 +25,7 @@ pcntl_signal(SIGTERM, $signalHandler);
 while (!$exit) {
     $data = [
         'event' => 'OrderPlaced',
-        'orderId' => mt_rand(1, 999999),
+        'orderId' => Uuid::uuid1()->toString(),
         'lines' => [],
     ];
 
