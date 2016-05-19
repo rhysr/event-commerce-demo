@@ -10,6 +10,8 @@ services:
             dockerfile: Dockerfile-app
         entrypoint: ["/usr/local/bin/dockerize", "-wait", "tcp://mq:5672"]
         command: ["/usr/bin/php", "/var/apps/ecomm/generate.php"]
+        volumes:
+            - .:/var/apps/ecomm
         depends_on:
             - mq
         links:
@@ -20,6 +22,8 @@ services:
             dockerfile: Dockerfile-app
         entrypoint: ["/usr/local/bin/dockerize", "-wait", "tcp://mq:5672"]
         command: ["/usr/bin/php", "/var/apps/ecomm/orders.php"]
+        volumes:
+            - .:/var/apps/ecomm
         depends_on:
             - mq
         links:
@@ -30,6 +34,8 @@ services:
             dockerfile: Dockerfile-app
         entrypoint: ["/usr/local/bin/dockerize", "-wait", "tcp://mq:5672"]
         command: ["/usr/bin/php", "/var/apps/ecomm/pos.php"]
+        volumes:
+            - .:/var/apps/ecomm
         depends_on:
             - mq
         links:
@@ -40,6 +46,8 @@ services:
             dockerfile: Dockerfile-app
         entrypoint: ["/usr/local/bin/dockerize", "-wait", "tcp://mq:5672"]
         command: ["/usr/bin/php", "/var/apps/ecomm/products.php"]
+        volumes:
+            - .:/var/apps/ecomm
         depends_on:
             - mq
         links:
