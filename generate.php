@@ -5,6 +5,7 @@ declare(ticks = 1);
 require_once __DIR__ . '/vendor/autoload.php';
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
+use PhpAmqpLib\Wire;
 use Ramsey\Uuid\Uuid;
 
 $connection = new AMQPStreamConnection('mq', 5672, 'guest', 'guest');
@@ -35,10 +36,15 @@ while (!$exit) {
             'quantity' => mt_rand(1, 20),
         ];
     }
+
+    $headers = new Wire\AMQPTable([
+        'correlation-id' => Uuid::uuid1()->toString(),
+    ]);
     $msg = new AMQPMessage(
         json_encode($data),
         [
             'content_type' => 'application/json',
+            'application_headers' => $headers,
         ]
     );
 
