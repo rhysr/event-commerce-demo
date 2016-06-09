@@ -21,8 +21,25 @@ services:
         command: ["logstash", "-f", "/var/apps/logstash/logstash.conf"]
         depends_on:
             - mq
+            - elasticsearch
         links:
             - mq
+            - elasticsearch
+    kibana:
+        build:
+            context: .
+            dockerfile: Dockerfile-kibana
+        entrypoint: 
+            - "/usr/local/bin/dockerize" 
+            - "-wait" 
+            - "tcp://elasticsearch:9200"
+        command: kibana
+        ports:
+            - "8990:5601"
+        depends_on:
+            - elasticsearch
+        links:
+            - elasticsearch
     generate:
         build:
             context: .
